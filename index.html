@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คำนวณค่า AVE และ Correlation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>คำนวณค่า AVE และ Correlation</h1>
+    <form id="aveForm">
+        <label for="variables">จำนวนตัวแปร:</label>
+        <input type="number" id="variables" name="variables" min="1" required>
+        <button type="button" onclick="generateTable()">สร้างตาราง</button>
+    </form>
+
+    <form id="dataForm" style="display:none;">
+        <div id="aveInputs"></div>
+        <div id="correlationInputs"></div>
+        <button type="button" onclick="calculate()">คำนวณ</button>
+    </form>
+
+    <div class="result" id="result"></div>
+
+    <script>
+        function generateTable() {
+            const variables = document.getElementById('variables').value;
+            const aveInputs = document.getElementById('aveInputs');
+            const correlationInputs = document.getElementById('correlationInputs');
+
+            aveInputs.innerHTML = '<h2>ค่า AVE</h2>';
+            correlationInputs.innerHTML = '<h2>ค่าสัมประสิทธิ์สหสัมพันธ์ (Correlation)</h2>';
+
+            for (let i = 1; i <= variables; i++) {
+                aveInputs.innerHTML += `
+                    <label for="ave${i}">AVE ตัวแปร ${i}:</label>
+                    <input type="number" id="ave${i}" name="ave${i}" step="0.01" required><br>
+                `;
+
+                correlationInputs.innerHTML += `<h3>Correlation ตัวแปร ${i}</h3>`;
+                for (let j = 1; j <= variables; j++) {
+                    if (i !== j) {
+                        correlationInputs.innerHTML += `
+                            <label for="corr${i}${j}">ระหว่างตัวแปร ${i} กับ ${j}:</label>
+                            <input type="number" id="corr${i}${j}" name="corr${i}${j}" step="0.01" required><br>
+                        `;
+                    }
+                }
+            }
+            document.getElementById('dataForm').style.display = 'block';
+        }
+
+        function calculate() {
+            const variables = document.getElementById('variables').value;
+            let result = document.getElementById('result');
+            result.innerHTML = '<h2>ผลการคำนวณ</h2>';
+
+            for (let i = 1; i <= variables; i++) {
+                const ave = parseFloat(document.getElementById(`ave${i}`).value);
+                let maxCorrSquared = 0;
+
+                for (let j = 1; j <= variables; j++) {
+                    if (i !== j) {
+                        const corr = parseFloat(document.getElementById(`corr${i}${j}`).value);
+                        const corrSquared = corr * corr;
+                        if (corrSquared > maxCorrSquared) {
+                            maxCorrSquared = corrSquared;
+                        }
+                    }
+                }
+
+                if (ave > maxCorrSquared) {
+                    result.innerHTML += `<p>ค่า AVE ของตัวแปร ${i} (${ave}) มากกว่าค่าสัมประสิทธิ์สหสัมพันธ์ยกกำลังสองที่มากที่สุด (${maxCorrSquared}) 🟢</p>`;
+                } else {
+                    result.innerHTML += `<p>ค่า AVE ของตัวแปร ${i} (${ave}) น้อยกว่าหรือเท่ากับค่าสัมประสิทธิ์สหสัมพันธ์ยกกำลังสองที่มากที่สุด (${maxCorrSquared}) 🔴</p>`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
